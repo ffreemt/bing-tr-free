@@ -13,18 +13,21 @@ def main():
 
     from_lang = 'auto'
     to_lang = 'zh'
+    text = 'test ' + str(randint(0, 10000))
 
     if not sys.argv[1:]:
         print('Provide some English text, with an optional to_lang')
         print('E.g., python -m bing_tr test this and that de')
-        print('Testing with some random text')
-        text = 'test ' + str(randint(0, 10000))
+        print('Testing with some random text\n')
     else:
         argv = sys.argv[1:]
         len_ = len(argv)
 
         if len_ == 1:
-            text = argv
+            if argv[0] in LANG_CODES:
+                to_lang = argv[0]
+            else:
+                text = argv[0]
         elif argv[-1] in LANG_CODES:
             to_lang = argv[-1]
             text = ' '.join(argv[:-1])
