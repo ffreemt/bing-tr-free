@@ -1,0 +1,6 @@
+# requests_cache
+requests
+fuzzywuzzy
+jmespath
+pytest
+coloredlogs
