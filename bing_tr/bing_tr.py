@@ -2,10 +2,12 @@
 bing translate for free as in beer
 '''
 
+import sys
 import logging
 from typing import Callable, Any, Tuple
 from random import randint
 import pytest  # type: ignore
+import mock
 
 import requests
 from fuzzywuzzy import fuzz, process  # type: ignore
@@ -120,9 +122,21 @@ def test_sanity(to_lang):
     assert numb in bing_tr(text, to_lang=to_lang)
 
 
+# https://medium.com/opsops/how-to-test-if-name-main-1928367290cb
+def test_init():
+    ''' test init/main '''
+    with mock.patch('__main__.main', return_value=42):
+        with mock.patch('__main__.__name__', '__main__'):
+            with mock.patch('sys.exit') as mock_exit:
+                init()
+                if mock_exit.call_args:
+                    assert mock_exit.call_args[0] == 42
+                print('mock_exit.call_args: ', mock_exit.call_args)
+
+
 def main():  # pragma: no cover
     ''' main '''
-    import sys
+
     text = sys.argv[1:]
     if not text:
         print(' Provide something to translate, testing with some random text')
@@ -133,5 +147,9 @@ def main():  # pragma: no cover
         print(f'{to_lang}: {bing_tr(text, to_lang=to_lang)}')
 
 
-if __name__ == '__main__':  # pragma: no cover
-    main()
+def init():
+    if __name__ == '__main__':
+        sys.exit(main())
+
+
+init()

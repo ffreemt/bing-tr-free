@@ -3,4 +3,5 @@ requests
 fuzzywuzzy
 jmespath
 pytest
+mock
 coloredlogs

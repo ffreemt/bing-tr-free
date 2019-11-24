@@ -7,6 +7,7 @@ from random import randint
 from bing_tr import bing_tr
 
 
+# pragma: no cover
 def main():
     '''main'''
     if not sys.argv[3:]:
