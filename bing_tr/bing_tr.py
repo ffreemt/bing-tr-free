@@ -183,6 +183,7 @@ def main():  # pragma: no cover
     ''' main '''
 
     text = sys.argv[1:]
+    text1 = ''
     if not text:
         print(' Provide something to translate, testing with some random text\n')
         text = 'test tihs and that' + str(randint(1, 1000))
@@ -191,7 +192,8 @@ def main():  # pragma: no cover
     print(f'{text} translated to:')
     for to_lang in ['zh', 'de', 'fr', ]:
         print(f'{to_lang}: {bing_tr(text, to_lang=to_lang)}')
-        print(f'{to_lang}: {bing_tr(text1, to_lang=to_lang)}')
+        if not test1:
+            print(f'{to_lang}: {bing_tr(text1, to_lang=to_lang)}')
 
 
 def init():
