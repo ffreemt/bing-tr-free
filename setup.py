@@ -13,6 +13,7 @@ description = name.replace('-tr-', ' translate for ')
 dir_name, = find_packages()
 
 version, = re.findall(r"\n__version__\W*=\W*'([^']+)'", open(Path(__file__).parent / f'{dir_name}/__init__.py').read())
+targz = 'v_' + version.replace('.', '') + '.tar.gz'
 
 README_rst = f'{Path(__file__).parent}/README.md'
 long_description = open(README_rst, encoding='utf-8').read() if Path(README_rst).exists() else ''
@@ -27,16 +28,21 @@ setup(
     keywords=['machine translation', 'free', 'scraping', ],
     author="mikeee",
     url=f'http://github.com/ffreemt/{name}',
-    download_url='https://github.com/ffreemt/bing-tr-free/archive/v_001.tar.gz',
+    download_url='https://github.com/ffreemt/bing-tr-free/archive/' + targz,
     install_requires=[
-        'requests_cache',
-        # 'jmespath',
+        # 'requests_cache',
+        'requests',
+        'fuzzywuzzy',
+        'jmespath',
+        'pytest',
+        # mock,
+        'coloredlogs',
+        'ratelimit',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'License :: OSI Approved :: MIT License',
     ],

@@ -9,10 +9,9 @@ from time import time
 from random import randint
 import pytest  # type: ignore
 # import mock
-from ratelimit import limits, sleep_and_retry
-
 
 import requests
+from ratelimit import limits, sleep_and_retry
 from fuzzywuzzy import fuzz, process  # type: ignore
 import coloredlogs  # type: ignore
 from jmespath import search  # type: ignore
@@ -126,8 +125,9 @@ def _rl_bing_tr(*args, **kwargs):
 def bing_tr(*args, **kwargs):
     ''' exempt first 200 calls from rate limiting '''
 
-    # increase calls unto 210
-    bing_tr.calls = bing_tr.calls if bing_tr.calls > 210 else bing_tr.calls + 1
+    # increase calls upto 210
+    if bing_tr.calls < 210:
+        bing_tr.calls += 1
 
     # reset rate limit if the last call was 2 minutes ago
     tick = time()
@@ -192,7 +192,7 @@ def main():  # pragma: no cover
     print(f'{text} translated to:')
     for to_lang in ['zh', 'de', 'fr', ]:
         print(f'{to_lang}: {bing_tr(text, to_lang=to_lang)}')
-        if not test1:
+        if not text1:
             print(f'{to_lang}: {bing_tr(text1, to_lang=to_lang)}')
 
 
