@@ -5,9 +5,12 @@ bing translate for free as in beer
 import sys
 import logging
 from typing import Callable, Any, Tuple
+from time import time
 from random import randint
 import pytest  # type: ignore
-import mock
+# import mock
+from ratelimit import limits, sleep_and_retry
+
 
 import requests
 from fuzzywuzzy import fuzz, process  # type: ignore
@@ -15,7 +18,8 @@ import coloredlogs  # type: ignore
 from jmespath import search  # type: ignore
 
 LOGGER = logging.getLogger(__name__)
-coloredlogs.install(level=10, logger=LOGGER)
+FMT = '%(filename)-14s[%(lineno)-3d] %(message)s [%(funcName)s]'
+coloredlogs.install(level=10, logger=LOGGER, fmt=FMT)
 
 LANG_CODES = (
         "ar,bg,ca,cs,da,de,el,en,es,fi,fr,he,hi,hr,hu,id,"
@@ -46,7 +50,7 @@ def with_func_attrs(**attrs: Any) -> Callable:
 
 
 @with_func_attrs(text='')
-def bing_tr(
+def _bing_tr(
         text: str,
         from_lang: str = 'auto',
         to_lang: str = 'zh',
@@ -110,6 +114,33 @@ def bing_tr(
     return res
 
 
+@sleep_and_retry
+@limits(calls=30, period=20, raise_on_limit=True)  # raise_on_limit probably superfluous
+def _rl_bing_tr(*args, **kwargs):
+    ''' be nice and throttle'''
+    LOGGER.info(' rate limiting 3 calls/2 secs... ')
+    return _bing_tr(*args, **kwargs)
+
+
+@with_func_attrs(calls=0, call_tick=-1)
+def bing_tr(*args, **kwargs):
+    ''' exempt first 200 calls from rate limiting '''
+
+    # increase calls unto 210
+    bing_tr.calls = bing_tr.calls if bing_tr.calls > 210 else bing_tr.calls + 1
+
+    # reset rate limit if the last call was 1 minutes again
+    tick = time()
+    if tick - bing_tr.calls > 120:
+        bing_tr.calls = 1
+    bing_tr.call_tick = tick
+
+    if bing_tr.calls < 200:
+        return _bing_tr(*args, **kwargs)
+
+    return _rl_bing_tr(*args, **kwargs)
+
+
 @pytest.mark.parametrize(
     # 'to_lang', LANG_CODES
     'to_lang', ['zh', 'de', 'fr', 'it', 'ko', 'ja', 'ru']
@@ -122,16 +153,30 @@ def test_sanity(to_lang):
     assert numb in bing_tr(text, to_lang=to_lang)
 
 
+def test_calls():
+    ''' test calls '''
+    calls = bing_tr.calls
+    bing_tr('test ')
+    assert bing_tr.calls == calls + 1
+
+
+_ = """
 # https://medium.com/opsops/how-to-test-if-name-main-1928367290cb
 def test_init():
     ''' test init/main '''
-    with mock.patch('__main__.main', return_value=42):
-        with mock.patch('__main__.__name__', '__main__'):
+    bing_tr.bing_tr = bing_tr
+    LOGGER.debug('__name__: %s', __name__)
+
+    with mock.patch('bing_tr.main', return_value=42):
+        LOGGER.debug('main(): %s', main())
+        with mock.patch('bing_tr.bing_tr.__name__', '__main__'):
             with mock.patch('sys.exit') as mock_exit:
+                LOGGER.debug('__name__: %s', __name__)
                 init()
                 if mock_exit.call_args:
                     assert mock_exit.call_args[0] == 42
                 print('mock_exit.call_args: ', mock_exit.call_args)
+# """  # cant make it work
 
 
 def main():  # pragma: no cover
@@ -139,17 +184,23 @@ def main():  # pragma: no cover
 
     text = sys.argv[1:]
     if not text:
-        print(' Provide something to translate, testing with some random text')
-        text = 'test ' + str(randint(1, 1000))
+        print(' Provide something to translate, testing with some random text\n')
+        text = 'test tihs and that' + str(randint(1, 1000))
+        text1 = 'test tihs and that' + str(randint(1, 1000))
 
     print(f'{text} translated to:')
     for to_lang in ['zh', 'de', 'fr', ]:
         print(f'{to_lang}: {bing_tr(text, to_lang=to_lang)}')
+        print(f'{to_lang}: {bing_tr(text1, to_lang=to_lang)}')
 
 
 def init():
+    ''' attempted to pytest __name__ == '__main__' '''
+    LOGGER.debug('__name__: %s', __name__)
     if __name__ == '__main__':
         sys.exit(main())
 
 
 init()
+
+# test_init()

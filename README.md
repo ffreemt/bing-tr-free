@@ -1,6 +1,6 @@
 # bing-tr-free
 
-bing translate for free
+bing translate for free: be gentle and rate limit to 3 calls/2 seconds, first 200 calls exempted
 
 ### Installation
 

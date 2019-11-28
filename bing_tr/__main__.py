@@ -34,9 +34,9 @@ def main():
         else:
             text = ' '.join(argv)
 
-    resu = bing_tr(text, from_lang, to_lang)
-
-    print(f'[{text}] translated to [{to_lang}]: [{resu}]')
+    for to_lang in ['zh', 'de', 'fr', 'it', 'es']:
+        resu = bing_tr(text, from_lang, to_lang)
+        print(f'[{text}] translated to [{to_lang}]: [{resu}]')
 
 
 if __name__ == '__main__':
