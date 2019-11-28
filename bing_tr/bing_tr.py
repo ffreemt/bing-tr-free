@@ -19,7 +19,7 @@ from jmespath import search  # type: ignore
 
 LOGGER = logging.getLogger(__name__)
 FMT = '%(filename)-14s[%(lineno)-3d] %(message)s [%(funcName)s]'
-coloredlogs.install(level=10, logger=LOGGER, fmt=FMT)
+coloredlogs.install(level=20, logger=LOGGER, fmt=FMT)
 
 LANG_CODES = (
         "ar,bg,ca,cs,da,de,el,en,es,fi,fr,he,hi,hr,hu,id,"
@@ -129,7 +129,7 @@ def bing_tr(*args, **kwargs):
     # increase calls unto 210
     bing_tr.calls = bing_tr.calls if bing_tr.calls > 210 else bing_tr.calls + 1
 
-    # reset rate limit if the last call was 1 minutes again
+    # reset rate limit if the last call was 2 minutes ago
     tick = time()
     if tick - bing_tr.calls > 120:
         bing_tr.calls = 1

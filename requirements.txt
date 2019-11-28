@@ -3,5 +3,6 @@ requests
 fuzzywuzzy
 jmespath
 pytest
-mock
+# mock
 coloredlogs
+ratelimit
